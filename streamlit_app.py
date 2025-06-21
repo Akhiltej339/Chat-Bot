@@ -14,10 +14,14 @@ INDEX_PATH = "vector_store/index.faiss"
 META_PATH = "vector_store/meta.pkl"
 IMAGE_DIR = "static/images"
 
-# Load index and metadata once
-index = faiss.read_index(INDEX_PATH)
-with open(META_PATH, "rb") as f:
-    documents, metadata = pickle.load(f)
+# Load FAISS index and metadata once
+try:
+    index = faiss.read_index(INDEX_PATH)
+    with open(META_PATH, "rb") as f:
+        documents, metadata = pickle.load(f)
+except Exception as e:
+    st.error(f"Error loading FAISS index: {e}")
+    st.stop()
 
 def get_embedding(text):
     res = openai.embeddings.create(
@@ -45,36 +49,41 @@ def generate_answer(context_text, question):
     )
     return response.choices[0].message.content
 
-# Streamlit UI
+# --- Streamlit UI ---
+st.title("MDM AI Chatbot (PDF + Images)")
 
-st.title("MDM AI Chatbot with PDF Images")
-
+# Chat session state
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-def chat():
-    user_question = st.text_input("Ask a question about MDM:")
-    if user_question:
-        st.session_state.chat_history.append({"role": "user", "text": user_question})
+user_input = st.text_input("Ask your question about MDM...")
 
-        results = search(user_question)
-        context_text = "\n\n".join([r["text"] for r in results])
-        images = []
-        for r in results:
-            images.extend(r["metadata"].get("images", []))
-        images = list(dict.fromkeys(images))  # unique
+if user_input:
+    # Step 1: Search relevant content
+    search_results = search(user_input)
+    context_text = "\n\n".join([r["text"] for r in search_results])
+    images = []
+    for r in search_results:
+        images.extend(r["metadata"].get("images", []))
+    images = list(dict.fromkeys(images))  # remove duplicates
 
-        answer = generate_answer(context_text, user_question)
-        st.session_state.chat_history.append({"role": "bot", "text": answer, "images": images})
+    # Step 2: Generate GPT-4o answer
+    answer = generate_answer(context_text, user_input)
 
-for message in st.session_state.chat_history:
-    if message["role"] == "user":
-        st.markdown(f"**You:** {message['text']}")
-    else:
-        st.markdown(f"**Bot:** {message['text']}")
-        for img in message.get("images", []):
-            image_path = os.path.join(IMAGE_DIR, img)
-            if os.path.exists(image_path):
-                st.image(image_path, caption=img)
+    # Step 3: Add to chat history
+    st.session_state.chat_history.append({
+        "question": user_input,
+        "answer": answer,
+        "images": images
+    })
 
-chat()
+# Render chat history
+for i, chat in enumerate(st.session_state.chat_history):
+    st.markdown(f"**You:** {chat['question']}")
+    st.markdown(f"**Bot:** {chat['answer']}")
+    for img in chat.get("images", []):
+        img_path = os.path.join(IMAGE_DIR, img)
+        if os.path.exists(img_path):
+            st.image(img_path, caption=img)
+        else:
+            st.warning(f"Image not found: {img}")
