@@ -4,5 +4,6 @@ __pycache__/
 vector_store/
 static/images/
 # Allow vector store
+!vector_store/
 !vector_store/index.faiss
 !vector_store/meta.pkl
