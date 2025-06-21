@@ -1,0 +1,11 @@
+openai
+faiss-cpu
+fastapi
+uvicorn
+python-dotenv
+tqdm
+PyMuPDF
+numpy
+jinja2               # for HTML templating
+aiofiles             # for static file serving
+streamlit
