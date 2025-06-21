@@ -2,7 +2,7 @@ __pycache__/
 *.pyc
 .env
 vector_store/
-static/images/
+!static/images/
 # Allow vector store
 !vector_store/
 !vector_store/index.faiss
