@@ -3,3 +3,6 @@ __pycache__/
 .env
 vector_store/
 static/images/
+# Allow vector store
+!vector_store/index.faiss
+!vector_store/meta.pkl
