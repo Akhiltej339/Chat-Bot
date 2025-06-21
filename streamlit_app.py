@@ -53,8 +53,7 @@ def generate_answer(context_text, question):
 st.title("MDM AI Chatbot (PDF + Images)")
 
 # Chat session state
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+st.session_state.chat_history = []
 
 user_input = st.text_input("Ask your question about MDM...")
 
