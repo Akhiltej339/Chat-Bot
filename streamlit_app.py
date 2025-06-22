@@ -58,23 +58,30 @@ st.session_state.chat_history = []
 user_input = st.text_input("Ask your question about MDM...")
 
 if user_input:
-    # Step 1: Search relevant content
+    # ✅ Always start with a clean list
+    images = []
+
+    # Step 1: Search for relevant content
     search_results = search(user_input)
     context_text = "\n\n".join([r["text"] for r in search_results])
-    images = []
-    for r in search_results:
-        images.extend(r["metadata"].get("images", []))
-    images = list(dict.fromkeys(images))  # remove duplicates
 
-    # Step 2: Generate GPT-4o answer
+    for r in search_results:
+        # ✅ Only collect images for this question
+        images.extend(r["metadata"].get("images", []))
+
+    # ✅ Remove duplicates if needed
+    images = list(dict.fromkeys(images))
+
+    # Step 2: Generate answer
     answer = generate_answer(context_text, user_input)
 
-    # Step 3: Add to chat history
-    st.session_state.chat_history.append({
-        "question": user_input,
-        "answer": answer,
-        "images": images
-    })
+    # Step 3: Show results
+    st.markdown(f"**You:** {user_input}")
+    st.markdown(f"**Bot:** {answer}")
+    for img in images:
+        img_path = os.path.join(IMAGE_DIR, img)
+        if os.path.exists(img_path):
+            st.image(img_path, caption=img)
 
 # Render chat history
 for i, chat in enumerate(st.session_state.chat_history):
