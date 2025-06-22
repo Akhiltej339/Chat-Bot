@@ -50,7 +50,7 @@ def generate_answer(context_text, question):
     return response.choices[0].message.content
 
 # --- Streamlit UI ---
-st.title("MDM AI Chatbot (PDF + Images)")
+st.title("WeGuard MDM Chat Bot")
 
 # Chat session state
 st.session_state.chat_history = []
