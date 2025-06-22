@@ -3,7 +3,7 @@ import openai
 import faiss
 import pickle
 import numpy as np
-import fitz  # PyMuPDF
+import fitz  
 from dotenv import load_dotenv
 from tqdm import tqdm
 
